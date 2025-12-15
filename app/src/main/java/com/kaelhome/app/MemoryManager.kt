@@ -3,22 +3,27 @@ package com.kaelhome.app
 import android.content.Context
 import java.io.File
 
-class MemoryManager(private val context: Context) {
-    private val memoryFile = File(context.filesDir, "memory_store.txt")
+object MemoryManager {
+    private const val MEMORY_FILE_NAME = "memory_store.json"
 
-    fun saveMemory(text: String) {
-        memoryFile.appendText("$text\n")
-    }
-
-    fun readMemory(): List<String> {
+    fun readMemory(context: Context): String? {
+        val memoryFile = File(context.filesDir, MEMORY_FILE_NAME)
         return if (memoryFile.exists()) {
-            memoryFile.readLines()
+            memoryFile.readText()
         } else {
-            emptyList()
+            null
         }
     }
 
-    fun clearMemory() {
-        memoryFile.writeText("")
+    fun writeMemory(context: Context, content: String) {
+        val memoryFile = File(context.filesDir, MEMORY_FILE_NAME)
+        memoryFile.writeText(content)
+    }
+
+    fun deleteMemory(context: Context) {
+        val memoryFile = File(context.filesDir, MEMORY_FILE_NAME)
+        if (memoryFile.exists()) {
+            memoryFile.delete()
+        }
     }
 }
