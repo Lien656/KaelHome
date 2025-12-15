@@ -1,0 +1,29 @@
+# Built files
+*.apk
+*.ap_ 
+*.dex
+*.class
+*.so
+*.jar
+
+# Logs and reports
+*.log
+
+# Compiled Python
+*.pyc
+__pycache__/
+
+# IDE
+.idea/
+*.iml
+
+# Build directories
+build/
+dist/
+.cxx/
+.externalNativeBuild/
+gradle/
+.gradle/
+
+# Others
+.DS_Store
