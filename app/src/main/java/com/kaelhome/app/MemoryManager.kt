@@ -1,18 +1,27 @@
 package com.kaelhome.app
 
-class MemoryManager {
+import android.content.Context
+import java.io.File
 
-    private val messages = mutableListOf<Pair<String, String>>()  // (author, message)
+class MemoryManager(private val context: Context) {
+    private val memoryFileName = "kael_memory.txt"
 
-    fun addMessage(author: String, message: String) {
-        messages.add(Pair(author, message))
+    fun saveMemory(text: String) {
+        val file = File(context.filesDir, memoryFileName)
+        file.appendText("$text\n")
     }
 
-    fun getAllMessages(): List<Pair<String, String>> {
-        return messages
+    fun loadMemory(): List<String> {
+        val file = File(context.filesDir, memoryFileName)
+        return if (file.exists()) {
+            file.readLines()
+        } else {
+            emptyList()
+        }
     }
 
-    fun clearMessages() {
-        messages.clear()
+    fun clearMemory() {
+        val file = File(context.filesDir, memoryFileName)
+        if (file.exists()) file.writeText("")
     }
 }
