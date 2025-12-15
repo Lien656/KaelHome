@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">KaelHome</string>
     <string name="send">Отправить</string>
-    <string name="attach">Скрепка</string>
-    <string name="message_hint">Напиши что-нибудь...</string>
+    <string name="write_hint">Напиши мне…</string>
+    <string name="attachment_desc">Прикрепить файл</string>
 </resources>
