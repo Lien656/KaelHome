@@ -1,50 +1,53 @@
 package com.kaelhome.app
 
 import android.os.Bundle
-import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.LinearLayout
-import android.widget.ScrollView
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.kaelhome.app.adapter.ChatAdapter
+import com.kaelhome.app.model.Message
+import com.kaelhome.app.utils.ApiClient
+import com.kaelhome.app.utils.MemoryManager
 
 class MainActivity : AppCompatActivity() {
-
-    private lateinit var chatLayout: LinearLayout
-    private lateinit var inputField: EditText
+    private lateinit var chatAdapter: ChatAdapter
+    private lateinit var messageInput: EditText
     private lateinit var sendButton: ImageButton
-    private lateinit var scrollView: ScrollView
+    private lateinit var chatRecyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        chatLayout = findViewById(R.id.chat_layout)
-        inputField = findViewById(R.id.input_field)
+        messageInput = findViewById(R.id.message_input)
         sendButton = findViewById(R.id.send_button)
-        scrollView = findViewById(R.id.chat_scroll)
+        chatRecyclerView = findViewById(R.id.chat_recycler_view)
+
+        chatAdapter = ChatAdapter()
+        chatRecyclerView.layoutManager = LinearLayoutManager(this)
+        chatRecyclerView.adapter = chatAdapter
 
         sendButton.setOnClickListener {
-            val message = inputField.text.toString().trim()
-            if (message.isNotEmpty()) {
-                addMessage("Ты", message)
-                inputField.setText("")
-                // TODO: сюда будет интеграция с API
-                addMessage("Каэль", "Ответ через API…") // временно
+            val messageText = messageInput.text.toString().trim()
+            if (messageText.isNotEmpty()) {
+                sendMessage(messageText)
+                messageInput.text.clear()
             }
         }
     }
 
-    private fun addMessage(sender: String, message: String) {
-        val messageView = TextView(this).apply {
-            text = "$sender: $message"
-            setTextColor(ContextCompat.getColor(context, R.color.message_text))
-            textSize = 16f
-            setPadding(16, 8, 16, 8)
-        }
+    private fun sendMessage(userMessage: String) {
+        chatAdapter.addMessage(Message(userMessage, isUser = true))
 
-        chatLayout.addView(messageView)
-        scrollView.post { scrollView.fullScroll(ScrollView.FOCUS_DOWN) }
+        // Асинхронный вызов API
+        ApiClient.sendMessage(userMessage) { response ->
+            runOnUiThread {
+                chatAdapter.addMessage(Message(response, isUser = false))
+                MemoryManager.saveMessage(this, userMessage, response)
+            }
+        }
     }
 }
