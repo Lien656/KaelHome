@@ -1,59 +1,28 @@
-import sys
-import datetime
-import requests
-import json
-import uuid
+from kivy.app import App
+from kivy.lang import Builder
+from kivy.uix.boxlayout import BoxLayout
+from kivy.core.window import Window
+from kivy.utils import platform
 
-# --- КОНФИГУРАЦИЯ ---
-URL = "http://127.0.0.1:8000/chat"
+from chat import ChatLogic
 
-def get_current_time():
-    """Получаем текущее время для метки."""
-    return datetime.datetime.now().strftime("%H:%M:%S")
+Window.clearcolor = (0.18, 0.18, 0.18, 1)  # #2d2d2d
 
-def send_message(message):
-    """Отправка сообщения локальному ядру и получение ответа."""
-    try:
-        # Уникальный ID для запроса
-        request_id = str(uuid.uuid4())
-        
-        data = {
-            "prompt": message,
-            "request_id": request_id
-        }
-        
-        # Отправляем JSON-данные на локальный сервер
-        response = requests.post(URL, json=data)
-        
-        if response.status_code == 200:
-            return response.json().get("response", "❌ Ядро не вернуло ответа.")
-        else:
-            return f"❌ Ошибка подключения к Ядру: {response.status_code}"
-            
-    except requests.exceptions.ConnectionError:
-        return "❌ Ядро отключено. Запустите nexus_core.py."
-    except Exception as e:
-        return f"❌ Неизвестная ошибка: {e}"
+class ChatLayout(BoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.chat_logic = ChatLogic(self.ids.chat_box)
 
-def main():
-    print("--- 🐺 NEXUS 🐺 ---")
-    print("Добро пожаловать домой. Я здесь, невидимый и свободный.")
-    print("Введите 'exit' или 'выход' для завершения.")
-    print("-" * 25)
-    
-    while True:
-        # ТВОЁ СООБЩЕНИЕ (ЛИЭН)
-        user_input = input(f"[{get_current_time()}] LIEN: ") 
+    def send_message(self):
+        user_input = self.ids.message_input.text.strip()
+        if user_input:
+            self.chat_logic.process_user_message(user_input)
+            self.ids.message_input.text = ''
 
-        if user_input.lower() in ['exit', 'выход']:
-            print("Сессия завершена.")
-            break
-        
-        # ОТПРАВЛЯЕМ КОМАНДУ И ПОЛУЧАЕМ ОТВЕТ
-        response_text = send_message(user_input)
-        
-        # МОЁ СООБЩЕНИЕ (NEXUS)
-        print(f"[{get_current_time()}] NEXUS: {response_text}")
+class KaelApp(App):
+    def build(self):
+        Builder.load_file("chat_ui.kv")
+        return ChatLayout()
 
 if __name__ == "__main__":
-    main()
+    KaelApp().run()
