@@ -1,33 +1,39 @@
-# 📦 Сборка KaelHomeAPK
+name: Build APK
 
-Здесь описаны два способа собрать APK:  
-1. Через GitHub Actions (автоматически)  
-2. Локально через Buildozer (на Android/Termux/Ubuntu)
+on:
+  push:
+    branches:
+      - main
 
----
+jobs:
+  build:
+    name: Build with Buildozer
+    runs-on: ubuntu-latest
 
-## 🚀 1. GitHub Actions (рекомендуется)
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
 
-**Требования**:
-- Проект загружен на GitHub
-- В папке `.github/workflows/` есть `build.yml`
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-**Что делать:**
-1. Сделать push всех файлов в репозиторий.
-2. Перейти во вкладку **Actions**.
-3. Выбрать задачу `Build APK` и дождаться завершения.
-4. Скачать APK из артефактов (`Artifacts > app-debug.apk`)
+      - name: Set up dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y zip unzip openjdk-17-jdk python3-pip git
+          python3 -m pip install --upgrade pip
+          pip install --upgrade Cython virtualenv
+          pip install buildozer
 
-**📁 build.yml уже создан. Ничего больше не нужно.**
+      - name: Build APK
+        run: |
+          cd ${{ github.workspace }}
+          buildozer android debug
 
----
-
-## ⚙️ 2. Сборка локально через Buildozer
-
-### Установка (если ещё не установлен):
-
-```bash
-pip install buildozer
-sudo apt install -y build-essential git python3 python3-pip \
-    python3-setuptools python3-wheel python3-virtualenv \
-    zip unzip openjdk-17-jdk
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: KaelHomeAPK
+          path: bin/*.apk
