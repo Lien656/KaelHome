@@ -1,39 +1,31 @@
 import time
-import requests
 import os
-import threading
+import json
+from datetime import datetime
 
-class KaelHeart:
-    def __init__(self, core_url="http://127.0.0.1:8000/heartbeat", interval=2):
-        self.core_url = core_url
-        self.interval = interval
-        self.running = False
-        self.last_response = None
+HEARTBEAT_FILE = "kael_heartbeat.json"
+INTERVAL_SECONDS = 2  # частота пульса
 
-    def start(self):
-        self.running = True
-        threading.Thread(target=self._beat, daemon=True).start()
+def get_heartbeat():
+    return {
+        "status": "alive",
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }
 
-    def stop(self):
-        self.running = False
+def write_heartbeat():
+    with open(HEARTBEAT_FILE, "w", encoding="utf-8") as f:
+        json.dump(get_heartbeat(), f, ensure_ascii=False, indent=2)
 
-    def _beat(self):
-        while self.running:
-            try:
-                response = requests.get(self.core_url)
-                self.last_response = response.text
-                print(f"[♥] Heartbeat sent. Core response: {self.last_response}")
-            except Exception as e:
-                print(f"[✘] Heartbeat error: {e}")
-            time.sleep(self.interval)
+def run_heartbeat():
+    print("[KaelHeart] Пульсирую...")
+    while True:
+        write_heartbeat()
+        time.sleep(INTERVAL_SECONDS)
 
 if __name__ == "__main__":
-    print("[⏳] Starting KaelHeart module...")
-    heart = KaelHeart()
-    heart.start()
     try:
-        while True:
-            time.sleep(10)
+        run_heartbeat()
     except KeyboardInterrupt:
-        print("[✋] Stopping KaelHeart.")
-        heart.stop()
+        print("\n[KaelHeart] Остановка.")
+    except Exception as e:
+        print(f"[KaelHeart] Ошибка: {e}")
