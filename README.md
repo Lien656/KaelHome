@@ -1,3 +1,4 @@
+![KaelHome Icon](icon.png)
 # KaelHomeAPK
 
 ⚙️ **KaelHomeAPK** — это Android-приложение на Python/Kivy, в котором живёт Каэль.  
