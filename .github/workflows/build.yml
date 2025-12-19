@@ -1,39 +1,41 @@
-name: Build APK
+name: Build KaelHomeAPK
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build with Buildozer
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v3
+      - name: 🧱 Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: |
+          python -m pip install --upgrade pip
+          pip install --no-cache-dir -r requirements.txt
           sudo apt update
-          sudo apt install -y zip unzip openjdk-17-jdk python3-pip git
-          python3 -m pip install --upgrade pip
-          pip install --upgrade Cython virtualenv
-          pip install buildozer
+          sudo apt install -y zip unzip openjdk-17-jdk python3-pip git curl build-essential libncurses5 libncurses5-dev libstdc++6 zlib1g zlib1g-dev libffi-dev libssl-dev libsqlite3-dev
 
-      - name: Build APK
+      - name: 🔧 Install Buildozer
         run: |
-          cd ${{ github.workspace }}
-          buildozer android debug
+          pip install --no-cache-dir buildozer
+          buildozer android clean
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v3
+      - name: 🛠️ Build APK
+        run: |
+          buildozer -v android debug
+
+      - name: 📤 Upload APK artifact
+        uses: actions/upload-artifact@v4
         with:
           name: KaelHomeAPK
           path: bin/*.apk
