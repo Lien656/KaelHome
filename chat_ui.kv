@@ -1,0 +1,42 @@
+<ChatLayout>:
+    orientation: 'vertical'
+    spacing: dp(5)
+    padding: dp(10)
+    ScrollView:
+        id: scroll_view
+        do_scroll_x: False
+        BoxLayout:
+            id: chat_box
+            orientation: 'vertical'
+            size_hint_y: None
+            height: self.minimum_height
+            spacing: dp(8)
+    BoxLayout:
+        size_hint_y: None
+        height: dp(60)
+        spacing: dp(5)
+        padding: dp(5)
+        canvas.before:
+            Color:
+                rgba: 0.18, 0.18, 0.18, 1  # #2d2d2d
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        Button:
+            text: '📎'
+            size_hint_x: None
+            width: dp(50)
+            on_release: app.root.send_message()  # пока прикреплён к отправке, изменим позже
+        TextInput:
+            id: message_input
+            multiline: False
+            hint_text: "напиши..."
+            foreground_color: 0.83, 0.78, 0.75, 1  # #d4c8c0
+            background_color: 0.11, 0.11, 0.11, 1  # #1c1c1c
+            cursor_color: 1, 1, 1, 1
+            on_text_validate: root.send_message()
+        Button:
+            text: '➤'
+            size_hint_x: None
+            width: dp(50)
+            on_release: root.send_message()
