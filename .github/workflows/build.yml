@@ -2,48 +2,60 @@ name: Build APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-22.04
+    
     steps:
-      - name: 🧱 Checkout repository
-        uses: actions/checkout@v4
-
-      - name: 🐍 Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: ☕ Install JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: 🛠 Install dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y zip unzip openjdk-17-jdk python3-pip git \
-            build-essential libncurses5 libncurses5-dev \
-            libstdc++6 zlib1g zlib1g-dev libffi-dev libssl-dev \
-            libsqlite3-dev libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev \
-            libsdl2-ttf-dev autoconf automake libtool libtool-bin
-
-      - name: 📦 Install Buildozer
-        run: |
-          pip install --upgrade pip
-          pip install buildozer cython==0.29.36
-
-      - name: 🔨 Build APK
-        run: |
-          buildozer -v android debug
-
-      - name: 📤 Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: KaelHomeAPK
-          path: bin/*.apk
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          git \
+          libsdl2-dev \
+          libsdl2-image-dev \
+          libsdl2-mixer-dev \
+          libsdl2-ttf-dev \
+          zlib1g-dev \
+          unzip \
+          autoconf \
+          automake \
+          libtool \
+          libtool-bin \
+          libffi-dev \
+          libssl-dev \
+          libncurses-dev
+    
+    - name: Install buildozer and cython
+      run: |
+        pip install --upgrade pip
+        pip install buildozer cython==0.29.36
+    
+    - name: Build APK
+      run: |
+        yes | buildozer android debug
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: kaelhome-apk
+        path: bin/*.apk
