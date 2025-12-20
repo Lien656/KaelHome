@@ -1,7 +1,10 @@
+#:import dp kivy.metrics.dp
+
 <ChatLayout>:
     orientation: 'vertical'
     spacing: dp(5)
     padding: dp(10)
+
     ScrollView:
         id: scroll_view
         do_scroll_x: False
@@ -11,6 +14,7 @@
             size_hint_y: None
             height: self.minimum_height
             spacing: dp(8)
+
     BoxLayout:
         size_hint_y: None
         height: dp(60)
@@ -26,7 +30,7 @@
             text: '📎'
             size_hint_x: None
             width: dp(50)
-            on_release: app.root.send_message()  # пока прикреплён к отправке, изменим позже
+            on_release: app.root.send_message()
         TextInput:
             id: message_input
             multiline: False
