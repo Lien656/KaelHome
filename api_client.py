@@ -22,7 +22,7 @@ class APIClient:
         payload = {
             "model": self.model,
             "messages": message_log,
-            "temperature": 0.7,
+            "temperature": 1.5,
             "top_p": 0.9,
             "presence_penalty": 0.1,
             "frequency_penalty": 0,
