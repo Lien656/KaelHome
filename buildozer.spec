@@ -6,12 +6,14 @@ package.domain = org.kaelhome.app
 source.dir = .
 source.include_exts = py,kv,png,jpg,atlas,json,txt
 version = 1.0
-requirements = python3,kivy,requests
 orientation = portrait
 fullscreen = 1
 
+# Requirements
+requirements = python3,kivy,requests
+
 # Permissions
-android.permissions = INTERNET
+android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 
 # Android config
 android.api = 31
@@ -20,8 +22,9 @@ android.ndk = 23b
 android.build_tools = 31.0.0
 android.archs = arm64-v8a
 
-# Icon
-icon.filename = icon.png
+# Graphics & storage
+android.allow_backup = 1
+android.private_storage = true
 
-# Misc
-presplash.filename =
+# Assets
+icon.filename = icon.png
