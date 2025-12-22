@@ -8,8 +8,6 @@
     ScrollView:
         id: scroll_view
         do_scroll_x: False
-        bar_width: dp(6)
-        scroll_type: ['bars', 'content']
         BoxLayout:
             id: chat_box
             orientation: 'vertical'
@@ -29,13 +27,17 @@
             Rectangle:
                 pos: self.pos
                 size: self.size
+
         Button:
             text: '📎'
+            font_size: '22sp'
             size_hint_x: None
             width: dp(50)
-            background_color: 0.2, 0.2, 0.2, 1
+            background_normal: ''
+            background_color: (0.15, 0.15, 0.15, 1)
             color: 1, 1, 1, 1
             on_release: app.root.send_message()
+
         TextInput:
             id: message_input
             multiline: False
@@ -43,14 +45,16 @@
             foreground_color: 0.83, 0.78, 0.75, 1  # #d4c8c0
             background_color: 0.11, 0.11, 0.11, 1  # #1c1c1c
             cursor_color: 1, 1, 1, 1
-            hint_text_color: 0.5, 0.5, 0.5, 1
-            font_size: dp(16)
-            padding: [dp(10), dp(10)]
+            padding: [dp(10), dp(10), dp(10), dp(10)]
+            font_size: '16sp'
             on_text_validate: root.send_message()
+
         Button:
             text: '➤'
+            font_size: '22sp'
             size_hint_x: None
             width: dp(50)
-            background_color: 0.2, 0.2, 0.2, 1
+            background_normal: ''
+            background_color: (0.15, 0.15, 0.15, 1)
             color: 1, 1, 1, 1
             on_release: root.send_message()
