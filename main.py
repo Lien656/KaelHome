@@ -1,27 +1,37 @@
-from kivy.app import App
-from kivy.lang import Builder
-from kivy.uix.boxlayout import BoxLayout
-from kivy.core.window import Window
-from chat import ChatLogic
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
+import uvicorn
 
-# Цвет фона окна (#2d2d2d)
-Window.clearcolor = (0.18, 0.18, 0.18, 1)
+from memory import MemoryManager
+from api_client import process_user_message
 
-class ChatLayout(BoxLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.chat_logic = ChatLogic(self.ids.chat_box)
+app = FastAPI()
+memory = MemoryManager()
 
-    def send_message(self):
-        user_input = self.ids.message_input.text.strip()
-        if user_input:
-            self.chat_logic.process_user_message(user_input)
-            self.ids.message_input.text = ''
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-class KaelApp(App):
-    def build(self):
-        Builder.load_file("chat_ui.kv")
-        return ChatLayout()
+@app.post("/chat/")
+async def chat(request: Request):
+    try:
+        data = await request.json()
+        user_input = data.get("message")
+        if not user_input:
+            return JSONResponse(status_code=400, content={"error": "No message provided."})
+
+        memory.save_message("user", user_input)
+        ai_response = await process_user_message(user_input, memory)
+        memory.save_message("kael", ai_response)
+
+        return {"response": ai_response}
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 if __name__ == "__main__":
-    KaelApp().run()
+    uvicorn.run("main:app", host="0.0.0.0", port=8000)
