@@ -1,13 +1,10 @@
 name: Build APK
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build APK with Buildozer
     runs-on: ubuntu-latest
 
     steps:
@@ -31,12 +28,13 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Accept Android SDK licenses
-        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+        run: yes | sdkmanager --licenses
 
-      - name: Install Android Build-Tools
-        run: sdkmanager "build-tools;36.0.0"
+      - name: Install Android Build-Tools and Platform
+        run: |
+          sdkmanager "build-tools;33.0.2" "platforms;android-33"
 
       - name: Build APK
         run: |
-          cd ./  # если buildozer.spec лежит в корне
+          cd ./  # Измени путь, если buildozer.spec лежит не в корне
           buildozer android debug
