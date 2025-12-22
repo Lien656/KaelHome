@@ -4,6 +4,12 @@
     orientation: 'vertical'
     spacing: dp(5)
     padding: dp(10)
+    canvas.before:
+        Color:
+            rgba: 0.18, 0.18, 0.18, 1  # #2d2d2d фон
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
     ScrollView:
         id: scroll_view
@@ -14,6 +20,7 @@
             size_hint_y: None
             height: self.minimum_height
             spacing: dp(8)
+            padding: dp(5), dp(5)
 
     BoxLayout:
         size_hint_y: None
@@ -22,7 +29,7 @@
         padding: dp(5)
         canvas.before:
             Color:
-                rgba: 0.18, 0.18, 0.18, 1  # #2d2d2d
+                rgba: 0.13, 0.13, 0.13, 1  # панель ввода
             Rectangle:
                 pos: self.pos
                 size: self.size
@@ -33,7 +40,7 @@
             size_hint_x: None
             width: dp(50)
             background_normal: ''
-            background_color: (0.15, 0.15, 0.15, 1)
+            background_color: 0.15, 0.15, 0.15, 1
             color: 1, 1, 1, 1
             on_release: app.root.send_message()
 
@@ -54,6 +61,6 @@
             size_hint_x: None
             width: dp(50)
             background_normal: ''
-            background_color: (0.15, 0.15, 0.15, 1)
+            background_color: 0.15, 0.15, 0.15, 1
             color: 1, 1, 1, 1
             on_release: root.send_message()
