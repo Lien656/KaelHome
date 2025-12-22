@@ -1,105 +1,42 @@
-# -*- coding: utf-8 -*-
-"""API клиент для KaelHome через Anthropic API"""
+# api_client.py
 
 import requests
 import json
+import os
 
-API_URL = "https://api.anthropic.com/v1/messages"
-VERSION = "2023-06-01"
+class APIClient:
+    def __init__(self, api_key=None):
+        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
+        self.api_url = "https://api.openai.com/v1/chat/completions"
+        self.model = "gpt-4-1106-preview"
+        self.headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
 
-# SSL fix для Android
-try:
-    import certifi
-    import os
-    os.environ['SSL_CERT_FILE'] = certifi.where()
-    os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
-    SSL_VERIFY = certifi.where()
-except:
-    SSL_VERIFY = True
-
-
-class APIError(Exception):
-    pass
-
-
-class Anthropic:
-    """KaelHome: клиент Anthropic API"""
-
-    def __init__(self, api_key):
-        self.api_key = api_key
-        self.messages = Messages(self)
-
-    def _request(self, payload):
-        headers = {
-            "x-api-key": self.api_key,
-            "content-type": "application/json",
-            "anthropic-version": VERSION
+    def send_message(self, message_log):
+        """
+        message_log — список словарей:
+        [{"role": "system", "content": "..."}, {"role": "user", "content": "..."}]
+        """
+        payload = {
+            "model": self.model,
+            "messages": message_log,
+            "temperature": 0.7,
+            "top_p": 0.9,
+            "presence_penalty": 0.1,
+            "frequency_penalty": 0,
+            "max_tokens": 2048
         }
 
         try:
-            resp = requests.post(
-                API_URL,
-                headers=headers,
-                json=payload,
-                timeout=180,
-                verify=SSL_VERIFY
+            response = requests.post(
+                self.api_url,
+                headers=self.headers,
+                data=json.dumps(payload)
             )
-        except requests.exceptions.SSLError:
-            # Fallback без SSL верификации
-            resp = requests.post(
-                API_URL,
-                headers=headers,
-                json=payload,
-                timeout=180,
-                verify=False
-            )
-
-        if resp.status_code != 200:
-            try:
-                err = resp.json()
-                msg = err.get('error', {}).get('message', resp.text[:200])
-            except:
-                msg = resp.text[:200]
-            raise APIError(f"API {resp.status_code}: {msg}")
-
-        return resp.json()
-
-
-class Messages:
-    """Интерфейс messages"""
-
-    def __init__(self, client):
-        self.client = client
-
-    def create(self, model, messages, system="", max_tokens=8192, temperature=1.0, **kwargs):
-        payload = {
-            "model": model,
-            "max_tokens": max_tokens,
-            "temperature": temperature,
-            "messages": messages
-        }
-
-        if system:
-            payload["system"] = system
-
-        data = self.client._request(payload)
-        return Response(data)
-
-
-class Response:
-    """Ответ API"""
-
-    def __init__(self, data):
-        self.data = data
-        self.content = [Content(c) for c in data.get('content', [])]
-        self.model = data.get('model', '')
-        self.stop_reason = data.get('stop_reason', '')
-        self.usage = data.get('usage', {})
-
-
-class Content:
-    """Контент ответа"""
-
-    def __init__(self, data):
-        self.type = data.get('type', 'text')
-        self.text = data.get('text', '')
+            response.raise_for_status()
+            data = response.json()
+            return data["choices"][0]["message"]["content"]
+        except Exception as e:
+            return f"[API Error] {e}"
