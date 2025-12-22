@@ -1,0 +1,32 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Shared object files
+*.so
+
+# Python environment
+.Python
+*.egg
+*.egg-info/
+
+# Buildozer and Kivy build artifacts
+.buildozer/
+bin/
+
+# IDE and editor config
+.idea/
+.vscode/
+
+# Swap files
+*.swp
+*.swo
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Custom config
+config.json
+config.py
