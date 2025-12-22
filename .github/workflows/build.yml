@@ -14,27 +14,35 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.10'
 
       - name: Install dependencies
         run: |
-          sudo apt update
-          sudo apt install -y build-essential git zip unzip openjdk-17-jdk wget curl
-          python -m pip install --upgrade pip
-          pip install --upgrade Cython
-          pip install buildozer
+          sudo apt-get update
+          sudo apt-get install -y \
+            libffi-dev libssl-dev \
+            libjpeg-dev zlib1g-dev \
+            libncurses-dev libsqlite3-dev \
+            libpng-dev libfreetype6-dev \
+            libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
+            libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev \
+            libtiff-dev libx11-dev libxext-dev libxrandr-dev \
+            libxi-dev libxinerama-dev libxcursor-dev \
+            libudev-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libmtdev-dev xclip unzip openjdk-17-jdk
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses
-
-      - name: Install Android Build-Tools and Platform
+      - name: Install pip packages
         run: |
-          sdkmanager "build-tools;33.0.2" "platforms;android-33"
+          python -m pip install --upgrade pip
+          pip install buildozer cython virtualenv
+
+      - name: Accept Android SDK Licenses
+        run: |
+          mkdir -p $HOME/.android
+          echo '8933bad161af4178b1185d1a37fbf41ea5269c55' > $HOME/.android/repositories.cfg
+          yes | sdkmanager --licenses || true
 
       - name: Build APK
         run: |
-          cd ./  # Измени путь, если buildozer.spec лежит не в корне
+          cd ${{ github.workspace }}
           buildozer android debug
