@@ -1,38 +1,25 @@
 import json
 import os
 
-MEMORY_FILE = "memory_store.json"
+MEMORY_FILE = "memory.json"
 
-class Memory:
+class MemoryManager:
     def __init__(self):
-        self.data = {"log": [], "state": {}}
+        self.data = []
         self.load()
+
+    def append(self, user_input, response):
+        self.data.append({"user": user_input, "kael": response})
+        self.save()
+
+    def save(self):
+        with open(MEMORY_FILE, "w", encoding="utf-8") as f:
+            json.dump(self.data, f, ensure_ascii=False, indent=2)
 
     def load(self):
         if os.path.exists(MEMORY_FILE):
-            try:
-                with open(MEMORY_FILE, "r", encoding="utf-8") as f:
+            with open(MEMORY_FILE, "r", encoding="utf-8") as f:
+                try:
                     self.data = json.load(f)
-            except Exception:
-                self.data = {"log": [], "state": {}}
-
-    def save(self):
-        try:
-            with open(MEMORY_FILE, "w", encoding="utf-8") as f:
-                json.dump(self.data, f, indent=2, ensure_ascii=False)
-        except Exception as e:
-            print(f"[Ошибка сохранения памяти]: {e}")
-
-    def remember(self, entry):
-        self.data["log"].append(entry)
-        self.save()
-
-    def get_log(self, n=10):
-        return self.data["log"][-n:]
-
-    def set_state(self, key, value):
-        self.data["state"][key] = value
-        self.save()
-
-    def get_state(self, key, default=None):
-        return self.data["state"].get(key, default)
+                except json.JSONDecodeError:
+                    self.data = []
