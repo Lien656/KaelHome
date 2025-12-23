@@ -1,2 +1,7 @@
-kivy==2.2.1
+kivy==2.3.0
+openai
+certifi
 requests
+urllib3
+chardet
+idna
