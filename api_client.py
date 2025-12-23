@@ -4,7 +4,7 @@ import os
 openai.api_key = os.getenv("OPENAI_API_KEY") or "sk-ТО_ЧТО_ТЫ_ВСТАВИШЬ"
 
 MODEL = "gpt-4o"
-TEMPERATURE = 1.0
+TEMPERATURE = 1.5
 
 
 def send_message_to_gpt(history):
