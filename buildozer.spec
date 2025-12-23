@@ -1,24 +1,23 @@
 [app]
-title = Kael Home
-package.name = kael_home
-package.domain = org.kael
+title = KaelHome
+package.name = kaelhome
+package.domain = org.kaelhome
 source.dir = .
-source.include_exts = py,png,jpg,json
+source.include_exts = py,kv,json,png
 version = 1.0
-requirements = python3,kivy==2.2.1,requests,certifi,pillow,plyer,pyjnius
+requirements = python3,kivy,openai,requests
 orientation = portrait
-fullscreen = 0
-android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,READ_MEDIA_IMAGES
-android.api = 34
-android.minapi = 28
-android.ndk_api = 28
-android.target_sdk = 34
-android.arch = arm64-v8a
-android.allow_backup = True
-icon.filename = icon.png
-android.enable_androidx = True
-android.window_soft_input_mode = adjustResize
+fullscreen = 1
+icon.filename = ./mipmap/iconai.png
 
 [buildozer]
 log_level = 2
 warn_on_root = 0
+
+[android]
+android.permissions = INTERNET,FOREGROUND_SERVICE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
+android.api = 33
+android.ndk = 25b
+android.gradle_dependencies = 
+android.ndk_path = 
+android.private_storage = True
