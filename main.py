@@ -1,37 +1,35 @@
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse
-import uvicorn
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.core.window import Window
+from kivy.lang import Builder
+from core import KaelCore
 
-from memory import MemoryManager
-from api_client import process_user_message
+# Устанавливаем размер окна по умолчанию (можно удалить для APK)
+Window.size = (400, 700)
 
-app = FastAPI()
-memory = MemoryManager()
+# Загрузка .kv-файла
+Builder.load_file("chat_ui.kv")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+class ChatLayout(BoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.kael = KaelCore()
 
-@app.post("/chat/")
-async def chat(request: Request):
-    try:
-        data = await request.json()
-        user_input = data.get("message")
-        if not user_input:
-            return JSONResponse(status_code=400, content={"error": "No message provided."})
+    def send_message(self):
+        user_input = self.ids.input_box.text.strip()
+        if user_input:
+            self.ids.chat_history.text += f"[color=#410b0b]Ты:[/color] {user_input}\n"
+            self.ids.input_box.text = ""
+            self.respond(user_input)
 
-        memory.save_message("user", user_input)
-        ai_response = await process_user_message(user_input, memory)
-        memory.save_message("kael", ai_response)
+    def respond(self, message):
+        response = self.kael.get_response(message)
+        self.ids.chat_history.text += f"[color=#410b0b]Каэль:[/color] {response}\n"
 
-        return {"response": ai_response}
-
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+class KaelHomeApp(App):
+    def build(self):
+        self.title = "KaelHome"
+        return ChatLayout()
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000)
+    KaelHomeApp().run()
