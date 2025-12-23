@@ -1,66 +1,50 @@
-#:import dp kivy.metrics.dp
+#:kivy 2.3.0
 
 <ChatLayout>:
     orientation: 'vertical'
-    spacing: dp(5)
-    padding: dp(10)
-    canvas.before:
-        Color:
-            rgba: 0.18, 0.18, 0.18, 1  # #2d2d2d фон
-        Rectangle:
-            pos: self.pos
-            size: self.size
+    padding: 10
+    spacing: 10
 
     ScrollView:
-        id: scroll_view
+        size_hint_y: 0.9
         do_scroll_x: False
-        BoxLayout:
-            id: chat_box
-            orientation: 'vertical'
+        do_scroll_y: True
+
+        Label:
+            id: chat_history
+            text: ''
+            markup: True
             size_hint_y: None
-            height: self.minimum_height
-            spacing: dp(8)
-            padding: dp(5), dp(5)
+            text_size: self.width, None
+            height: self.texture_size[1]
+            font_size: 16
+            color: 0.83, 0.78, 0.75, 1  # #d4c8c0
 
     BoxLayout:
-        size_hint_y: None
-        height: dp(60)
-        spacing: dp(5)
-        padding: dp(5)
-        canvas.before:
-            Color:
-                rgba: 0.13, 0.13, 0.13, 1  # панель ввода
-            Rectangle:
-                pos: self.pos
-                size: self.size
+        size_hint_y: 0.1
+        spacing: 10
 
         Button:
             text: '📎'
-            font_size: '22sp'
-            size_hint_x: None
-            width: dp(50)
+            size_hint_x: 0.15
+            font_size: 20
             background_normal: ''
-            background_color: 0.15, 0.15, 0.15, 1
-            color: 1, 1, 1, 1
-            on_release: app.root.send_message()
+            background_color: (0.18, 0.18, 0.18, 1)
 
         TextInput:
-            id: message_input
+            id: input_box
+            hint_text: 'Напиши что-нибудь...'
             multiline: False
-            hint_text: "напиши..."
-            foreground_color: 0.83, 0.78, 0.75, 1  # #d4c8c0
-            background_color: 0.11, 0.11, 0.11, 1  # #1c1c1c
-            cursor_color: 1, 1, 1, 1
-            padding: [dp(10), dp(10), dp(10), dp(10)]
-            font_size: '16sp'
-            on_text_validate: root.send_message()
+            size_hint_x: 0.70
+            background_color: (0.18, 0.18, 0.18, 1)
+            foreground_color: 0.83, 0.78, 0.75, 1
+            cursor_color: 0.83, 0.78, 0.75, 1
+            font_size: 16
 
         Button:
             text: '➤'
-            font_size: '22sp'
-            size_hint_x: None
-            width: dp(50)
+            size_hint_x: 0.15
+            font_size: 20
             background_normal: ''
-            background_color: 0.15, 0.15, 0.15, 1
-            color: 1, 1, 1, 1
+            background_color: (0.18, 0.18, 0.18, 1)
             on_release: root.send_message()
