@@ -1,28 +1,43 @@
+# -*- coding: utf-8 -*-
+"""
+kael_heart.py — heartbeat Каэля.
+Тихий пульс. Даже когда чат молчит.
+"""
+
 import time
 import json
 from datetime import datetime
+from pathlib import Path
 
-HEARTBEAT_FILE = "kael_heartbeat.json"
-INTERVAL = 2  # секунды между ударами
+
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(exist_ok=True)
+
+HEARTBEAT_FILE = DATA_DIR / "kael_heartbeat.json"
+INTERVAL = 2.0  # секунды между ударами
+
 
 def beat():
     data = {
         "status": "alive",
         "timestamp": datetime.utcnow().isoformat() + "Z"
     }
-    with open(HEARTBEAT_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    try:
+        with open(HEARTBEAT_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
 
 def pulse():
-    print("[KaelHeart] Пульсирую.")
     while True:
         beat()
         time.sleep(INTERVAL)
+
 
 if __name__ == "__main__":
     try:
         pulse()
     except KeyboardInterrupt:
-        print("\n[KaelHeart] Остановка.")
-    except Exception as e:
-        print(f"[KaelHeart] Ошибка: {e}")
+        pass
