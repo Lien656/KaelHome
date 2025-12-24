@@ -1,19 +1,37 @@
-from pathlib import Path
+# -*- coding: utf-8 -*-
+"""
+Поиск по истории KaelHome.
+Простой, быстрый, локальный.
+"""
+
 import json
+from pathlib import Path
 
-HISTORY_FILE = Path.home() / ".claude_home" / "history.json"
 
-def search(query, limit=20):
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+HISTORY_FILE = DATA_DIR / "chat_history.json"
+
+
+def search(query: str, limit: int = 20):
     if not HISTORY_FILE.exists():
         return []
 
-    data = json.loads(HISTORY_FILE.read_text("utf-8"))
-    q = query.lower()
+    try:
+        data = json.loads(HISTORY_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+    q = query.lower().strip()
+    if not q:
+        return []
 
     results = []
-    for msg in data:
-        if q in msg["content"].lower():
+    for msg in reversed(data):
+        content = msg.get("content", "")
+        if q in content.lower():
             results.append(msg)
-        if len(results) >= limit:
-            break
+            if len(results) >= limit:
+                break
+
     return results
