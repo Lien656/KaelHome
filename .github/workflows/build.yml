@@ -1,50 +1,41 @@
 name: Build KaelHome APK
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build APK with Buildozer
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+    - name: Check out repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
 
-      - name: Install build dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y zip unzip build-essential libncurses5 libstdc++6 libffi-dev libssl-dev \
-            libsqlite3-dev libjpeg-dev zlib1g-dev libncursesw5 libreadline6-dev libgdbm-dev \
-            libc6-dev libbz2-dev libglib2.0-0 libgl1-mesa-glx libegl1-mesa libmtdev-dev \
-            xclip xsel libxml2-dev libxslt1-dev libtool python3-pip git openjdk-17-jdk \
-            libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev \
-            libswscale-dev libavformat-dev libavcodec-dev libfreetype6-dev
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y zip unzip build-essential libncurses5 libstdc++6 libffi-dev \
+          libssl-dev libsqlite3-dev libbz2-dev libreadline-dev liblzma-dev zlib1g-dev \
+          libncursesw5-dev libgdbm-dev libc6-dev libdb-dev git python3-pip openjdk-17-jdk wget curl
 
-      - name: Install Cython and Buildozer
-        run: |
-          pip install --upgrade pip
-          pip install Cython==0.29.36 buildozer
+    - name: Install buildozer
+      run: |
+        pip install --upgrade pip
+        pip install cython==0.29.36
+        pip install buildozer
 
-      - name: Initialize Buildozer Spec
-        run: |
-          cd $GITHUB_WORKSPACE
-          if [ ! -f buildozer.spec ]; then buildozer init; fi
+    - name: Build APK
+      run: |
+        cd backend
+        buildozer android debug
 
-      - name: Build APK
-        run: |
-          buildozer -v android debug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: kaelhome-apk
-          path: bin/*.apk
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: KaelHome-APK
+        path: backend/bin/*.apk
