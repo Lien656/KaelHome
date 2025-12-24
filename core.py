@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 from kivy.clock import Clock
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.widget import Widget
+from kivy.factory import Factory
 
 from api_client import OpenAIClient, APIError
 from system_prompt import SYSTEM_PROMPT
+from memory_store import MemoryStore
 
 
 class ChatCore:
     """
-    Центральная логика чата.
-    UI -> Core -> API -> UI
+    Центральная логика чата KaelHome.
+    UI -> Core -> API -> Memory -> UI
     """
 
     def __init__(self, root_widget):
@@ -20,7 +20,13 @@ class ChatCore:
         self.input_field = root_widget.ids.message_input
 
         self.api_client = None
-        self.messages = []
+
+        # Память
+        self.memory = MemoryStore(max_items=500)
+        self.messages = self.memory.get_recent(limit=30)
+
+        # При старте — восстановить историю в UI
+        Clock.schedule_once(lambda dt: self._restore_history(), 0)
 
     # ---------- API ----------
 
@@ -34,19 +40,16 @@ class ChatCore:
         if not text:
             return
 
-        # Добавляем сообщение пользователя
-        self._add_message(text, from_user=True)
-
-        # Чистим поле ввода
         self.input_field.text = ""
 
-        # Сохраняем в историю
-        self.messages.append({
-            "role": "user",
-            "content": text
-        })
+        # UI
+        self._add_message(text, from_user=True)
 
-        # Запрос к модели с небольшой задержкой (человечно)
+        # Память
+        self.memory.add("user", text)
+        self.messages.append({"role": "user", "content": text})
+
+        # Запрос к модели
         Clock.schedule_once(lambda dt: self._request_model(), 0.1)
 
     # ---------- Model ----------
@@ -61,29 +64,39 @@ class ChatCore:
                 system=SYSTEM_PROMPT
             )
         except APIError as e:
-            self._add_message(f"[Ошибка API]\n{e}", from_user=False)
+            self._add_message(f"[API error]\n{e}", from_user=False)
             return
 
         # Возможность молчать
         if not reply or not reply.strip():
             return
 
-        self.messages.append({
-            "role": "assistant",
-            "content": reply
-        })
+        # Память
+        self.memory.add("assistant", reply)
+        self.messages.append({"role": "assistant", "content": reply})
 
+        # UI
         self._add_message(reply, from_user=False)
+
+    # ---------- History ----------
+
+    def _restore_history(self):
+        for msg in self.messages:
+            role = msg.get("role")
+            content = msg.get("content", "")
+            if role == "user":
+                self._add_message(content, from_user=True, scroll=False)
+            elif role == "assistant":
+                self._add_message(content, from_user=False, scroll=False)
+
+        self._scroll_to_bottom()
 
     # ---------- Chat UI ----------
 
-    def _add_message(self, text: str, from_user: bool):
-        from kivy.factory import Factory
-
+    def _add_message(self, text: str, from_user: bool, scroll: bool = True):
         bubble = Factory.ChatMessage()
         bubble.text = text
 
-        # Цвет облачка
         if from_user:
             bubble.bg_color = (0.65, 0.65, 0.65, 0.82)  # #a6a6a6
             bubble.pos_hint = {"right": 1}
@@ -93,8 +106,8 @@ class ChatCore:
 
         self.chat_box.add_widget(bubble)
 
-        # Автоскролл вниз
-        Clock.schedule_once(lambda dt: self._scroll_to_bottom(), 0.05)
+        if scroll:
+            Clock.schedule_once(lambda dt: self._scroll_to_bottom(), 0.05)
 
     def _scroll_to_bottom(self):
         scroll = self.root.ids.scroll
