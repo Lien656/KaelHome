@@ -5,23 +5,33 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Check out repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.11'
 
-    - name: Install dependencies
+    - name: Install system dependencies
       run: |
-        sudo apt update
-        sudo apt install -y zip unzip build-essential libncurses5 libstdc++6 libffi-dev \
-          libssl-dev libsqlite3-dev libbz2-dev libreadline-dev liblzma-dev zlib1g-dev \
-          libncursesw5-dev libgdbm-dev libc6-dev libdb-dev git python3-pip openjdk-17-jdk wget curl
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          git \
+          unzip \
+          zip \
+          openjdk-17-jdk \
+          libffi-dev \
+          libssl-dev \
+          zlib1g-dev \
+          libsdl2-dev \
+          libsdl2-image-dev \
+          libsdl2-mixer-dev \
+          libsdl2-ttf-dev
 
     - name: Install buildozer
       run: |
@@ -31,11 +41,10 @@ jobs:
 
     - name: Build APK
       run: |
-        cd backend
         buildozer android debug
 
     - name: Upload APK
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: KaelHome-APK
-        path: backend/bin/*.apk
+        path: bin/*.apk
