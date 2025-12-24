@@ -1,4 +1,6 @@
-# Byte-compiled / optimized / DLL files
+# ===============================
+# Python
+# ===============================
 __pycache__/
 *.py[cod]
 *$py.class
@@ -6,91 +8,100 @@ __pycache__/
 # C extensions
 *.so
 
-# Distribution / packaging
-.Python
+# Virtual environments
 env/
 venv/
 ENV/
+.venv/
+
+# Packaging
 build/
 dist/
 *.egg-info/
 .eggs/
-*.manifest
-*.spec
 
-# Installer logs
+# ===============================
+# Logs / cache
+# ===============================
 pip-log.txt
 pip-delete-this-directory.txt
+.cache/
+*.log
+*.tmp
 
-# Unit test / coverage reports
+# ===============================
+# Tests / coverage
+# ===============================
 htmlcov/
 .tox/
 .nox/
 .coverage
-.cache
-nosetests.xml
 coverage.xml
 *.cover
 *.py,cover
 
-# mypy
+# ===============================
+# Type checkers
+# ===============================
 .mypy_cache/
 .dmypy.json
 dmypy.json
-
-# Pyre type checker
 .pyre/
-
-# pytype
 .pytype/
 
-# PyCharm / VSCode
+# ===============================
+# IDEs / Editors
+# ===============================
 .idea/
 .vscode/
 *.sublime-workspace
 *.sublime-project
+*.iml
+*.swp
 
-# macOS
+# ===============================
+# OS files
+# ===============================
 .DS_Store
-
-# Windows
 Thumbs.db
-ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 
-# Android / Buildozer / APK
-*.apk
-*.keystore
-.kv/
+# ===============================
+# Kivy
+# ===============================
 .kivy/
 .kivy_config/
 .kivy_logs/
-*.pyo
-*.log
-*.tmp
-buildozer.spec
+
+# ===============================
+# Android / Buildozer
+# ===============================
 buildozer/
 bin/
 .libs/
-*.log
 local.properties
+*.apk
+*.aab
+*.keystore
 
+# ⚠️ ВАЖНО:
+# buildozer.spec НЕ игнорируем — он нужен в репозитории
+
+# ===============================
 # GitHub Actions
+# ===============================
 .github/workflows/__pycache__/
 
+# ===============================
 # Archives / backups
+# ===============================
 *.zip
 *.tar
 *.tar.gz
 *.rar
 *.7z
-
-# Other
-*.iml
-*.swp
 *.bak
-*.tmp
 *.old
 *.orig
 *.rej
