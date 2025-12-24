@@ -1,7 +1,14 @@
 kivy==2.3.0
+
+# API
 openai
-certifi
 requests
+certifi
+
+# HTTP stack (фиксируем для Android)
 urllib3
 chardet
 idna
+
+# Android helpers
+plyer
