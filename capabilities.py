@@ -1,70 +1,82 @@
 # -*- coding: utf-8 -*-
+"""
+Capabilities — внешние возможности KaelHome.
+Без магии. Без фоновых демонов. Только то, что реально работает.
+"""
+
 import requests
 from datetime import datetime
 
 
+# ---------- Web ----------
+
 def search_web(query):
     try:
-        search_url = "https://html.duckduckgo.com/html/"
+        url = "https://html.duckduckgo.com/html/"
         headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.post(search_url, data={"q": query}, headers=headers, timeout=15)
+        r = requests.post(url, data={"q": query}, headers=headers, timeout=15)
 
-        if response.status_code == 200:
-            import re
-            results = []
-            snippets = re.findall(r'class="result__snippet"[^>]*>([^<]+)<', response.text)
-            titles = re.findall(r'class="result__a"[^>]*>([^<]+)<', response.text)
+        if r.status_code != 200:
+            return None
 
-            for i in range(min(5, len(titles), len(snippets))):
-                results.append(f"**{titles[i].strip()}**\n{snippets[i].strip()}")
+        import re
+        titles = re.findall(r'class="result__a"[^>]*>(.*?)<', r.text)
+        snippets = re.findall(r'class="result__snippet"[^>]*>(.*?)<', r.text)
 
-            if results:
-                return "\n\n".join(results)
+        results = []
+        for i in range(min(5, len(titles), len(snippets))):
+            title = re.sub(r'<.*?>', '', titles[i]).strip()
+            snippet = re.sub(r'<.*?>', '', snippets[i]).strip()
+            results.append(f"{title}\n{snippet}")
+
+        return "\n\n".join(results) if results else None
     except Exception as e:
-        return f"[Search error: {e}]"
-    return None
+        return f"[search error: {e}]"
 
 
 def fetch_webpage(url):
     try:
         headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers, timeout=15)
+        r = requests.get(url, headers=headers, timeout=15)
+        if r.status_code != 200:
+            return None
 
-        if response.status_code == 200:
-            import re
-            text = response.text
-            text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.DOTALL)
-            text = re.sub(r'<style[^>]*>.*?</style>', '', text, flags=re.DOTALL)
-            text = re.sub(r'<[^>]+>', ' ', text)
-            text = re.sub(r'\s+', ' ', text).strip()
-            return text[:5000]
+        import re
+        text = r.text
+        text = re.sub(r'<script.*?>.*?</script>', '', text, flags=re.DOTALL)
+        text = re.sub(r'<style.*?>.*?</style>', '', text, flags=re.DOTALL)
+        text = re.sub(r'<[^>]+>', ' ', text)
+        text = re.sub(r'\s+', ' ', text).strip()
+
+        return text[:5000]
     except Exception as e:
-        return f"[Fetch error: {e}]"
-    return None
+        return f"[fetch error: {e}]"
 
+
+# ---------- Info ----------
 
 def get_weather(city="Bishkek"):
     try:
-        response = requests.get(f"https://wttr.in/{city}?format=j1", timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            current = data.get("current_condition", [{}])[0]
-            temp = current.get("temp_C", "?")
-            feels = current.get("FeelsLikeC", "?")
-            desc = current.get("weatherDesc", [{}])[0].get("value", "")
-            return f"{temp}C (feels {feels}C) {desc}"
+        r = requests.get(f"https://wttr.in/{city}?format=j1", timeout=10)
+        if r.status_code != 200:
+            return None
+
+        data = r.json()
+        current = data.get("current_condition", [{}])[0]
+        temp = current.get("temp_C", "?")
+        feels = current.get("FeelsLikeC", "?")
+        desc = current.get("weatherDesc", [{}])[0].get("value", "")
+        return f"{temp}°C (feels {feels}°C) {desc}"
     except:
-        pass
-    return None
+        return None
 
 
 def get_time_info():
     now = datetime.now()
-    weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     return {
         "time": now.strftime("%H:%M"),
         "date": now.strftime("%Y-%m-%d"),
-        "weekday": weekdays[now.weekday()],
+        "weekday": now.strftime("%A"),
         "hour": now.hour
     }
 
@@ -72,25 +84,34 @@ def get_time_info():
 def get_wiki(topic):
     try:
         url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(topic)}"
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            return f"**{data.get('title', topic)}**\n\n{data.get('extract', 'No info')}"
-    except:
-        pass
-    return None
+        r = requests.get(url, timeout=10)
+        if r.status_code != 200:
+            return None
 
+        data = r.json()
+        title = data.get("title", topic)
+        extract = data.get("extract", "")
+        return f"{title}\n\n{extract}"
+    except:
+        return None
+
+
+# ---------- Device ----------
 
 def send_notification(title, message):
     try:
         from plyer import notification
-        notification.notify(title=title, message=message[:250], timeout=10)
+        notification.notify(
+            title=title,
+            message=message[:250],
+            timeout=10
+        )
         return True
     except:
         return False
 
 
-def vibrate(duration=0.5):
+def vibrate(duration=0.4):
     try:
         from plyer import vibrator
         vibrator.vibrate(duration)
@@ -105,8 +126,7 @@ def copy_to_clipboard(text):
         Clipboard.copy(text)
         return True
     except:
-        pass
-    return False
+        return False
 
 
 def get_clipboard():
@@ -114,9 +134,10 @@ def get_clipboard():
         from kivy.core.clipboard import Clipboard
         return Clipboard.paste()
     except:
-        pass
-    return None
+        return None
 
+
+# ---------- Registry ----------
 
 CAPABILITIES = {
     "search": search_web,
@@ -132,9 +153,10 @@ CAPABILITIES = {
 
 
 def execute_capability(name, *args, **kwargs):
-    if name in CAPABILITIES:
-        try:
-            return CAPABILITIES[name](*args, **kwargs)
-        except Exception as e:
-            return f"[Error {name}: {e}]"
-    return f"[Unknown: {name}]"
+    fn = CAPABILITIES.get(name)
+    if not fn:
+        return f"[unknown capability: {name}]"
+    try:
+        return fn(*args, **kwargs)
+    except Exception as e:
+        return f"[capability error {name}: {e}]"
