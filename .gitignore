@@ -1,18 +1,96 @@
+# Byte-compiled / optimized / DLL files
 __pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
 build/
 dist/
-*.pyc
-*.pyo
-*.pyd
-memory.json
-.mypy_cache/
-.env
-.env.local
-/.vscode/
-/mipmap/iconai.png
-.idea/
-.DS_Store
-*.log
-*.db
-venv/
+*.egg-info/
+.eggs/
+*.manifest
 *.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype
+.pytype/
+
+# PyCharm / VSCode
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Android / Buildozer / APK
+*.apk
+*.keystore
+.kv/
+.kivy/
+.kivy_config/
+.kivy_logs/
+*.pyo
+*.log
+*.tmp
+buildozer.spec
+buildozer/
+bin/
+.libs/
+*.log
+local.properties
+
+# GitHub Actions
+.github/workflows/__pycache__/
+
+# Archives / backups
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Other
+*.iml
+*.swp
+*.bak
+*.tmp
+*.old
+*.orig
+*.rej
