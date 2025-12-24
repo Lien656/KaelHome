@@ -18,7 +18,7 @@
 
     Label:
         text: root.text
-        color: 0.95, 0.95, 0.95, 1   # #f2f2f2
+        color: 0.95, 0.95, 0.95, 1   # светлый текст
         text_size: self.width, None
         size_hint_y: None
         halign: "left"
@@ -88,13 +88,14 @@
             write_tab: False
 
         Button:
-            id: send_btn
+            id: send_button
             text: "➤"
             size_hint_x: None
             width: dp(42)
             background_normal: ""
             background_color: 0, 0, 0, 0
             font_size: "20sp"
+            on_release: app.core.on_send_pressed()
 
 
 RootLayout:
