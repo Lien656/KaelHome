@@ -1,35 +1,59 @@
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.core.window import Window
 from kivy.lang import Builder
-from core import KaelCore
+from kivy.clock import Clock
+from kivy.core.window import Window
+from kivy.utils import platform
 
-# Устанавливаем размер окна по умолчанию (можно удалить для APK)
-Window.size = (400, 700)
+# Android soft input
+if platform == "android":
+    Window.softinput_mode = "resize"
 
-# Загрузка .kv-файла
-Builder.load_file("chat_ui.kv")
+# Пути
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-class ChatLayout(BoxLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.kael = KaelCore()
+KV_FILE = os.path.join(BASE_DIR, "chat_ui.kv")
 
-    def send_message(self):
-        user_input = self.ids.input_box.text.strip()
-        if user_input:
-            self.ids.chat_history.text += f"[color=#410b0b]Ты:[/color] {user_input}\n"
-            self.ids.input_box.text = ""
-            self.respond(user_input)
 
-    def respond(self, message):
-        response = self.kael.get_response(message)
-        self.ids.chat_history.text += f"[color=#410b0b]Каэль:[/color] {response}\n"
+class KaelHome(App):
+    """
+    Главный класс приложения.
+    Тут НЕТ логики ИИ.
+    Только запуск, окно и подключение UI.
+    """
 
-class KaelHomeApp(App):
     def build(self):
-        self.title = "KaelHome"
-        return ChatLayout()
+        # Фон приложения (основа)
+        Window.clearcolor = (0.176, 0.176, 0.176, 1)  # #2d2d2d
+
+        # Загружаем KV
+        if not os.path.exists(KV_FILE):
+            raise FileNotFoundError("chat_ui.kv не найден")
+
+        root = Builder.load_file(KV_FILE)
+        return root
+
+    def on_start(self):
+        """
+        Хук запуска.
+        Здесь потом:
+        - heartbeat
+        - автосообщения
+        - восстановление истории
+        """
+        pass
+
+    def on_pause(self):
+        # Android lifecycle safe
+        return True
+
+    def on_resume(self):
+        pass
+
 
 if __name__ == "__main__":
-    KaelHomeApp().run()
+    KaelHome().run()
