@@ -9,23 +9,18 @@ from memory_store import MemoryStore
 
 
 class ChatCore:
-    """
-    Центральная логика чата KaelHome.
-    UI -> Core -> API -> Memory -> UI
-    """
-
     def __init__(self, root_widget):
         self.root = root_widget
         self.chat_box = root_widget.ids.chat_box
         self.input_field = root_widget.ids.message_input
+        self.send_button = root_widget.ids.send_button
 
         self.api_client = None
+        self.waiting = False
 
-        # Память
         self.memory = MemoryStore(max_items=500)
         self.messages = self.memory.get_recent(limit=30)
 
-        # При старте — восстановить историю в UI
         Clock.schedule_once(lambda dt: self._restore_history(), 0)
 
     # ---------- API ----------
@@ -33,29 +28,32 @@ class ChatCore:
     def set_api_key(self, api_key: str):
         self.api_client = OpenAIClient(api_key)
 
-    # ---------- UI actions ----------
+    # ---------- UI ----------
 
     def on_send_pressed(self):
+        if self.waiting:
+            return
+
         text = self.input_field.text.strip()
         if not text:
             return
 
         self.input_field.text = ""
+        self.waiting = True
+        self.send_button.disabled = True
 
-        # UI
         self._add_message(text, from_user=True)
 
-        # Память
         self.memory.add("user", text)
         self.messages.append({"role": "user", "content": text})
 
-        # Запрос к модели
         Clock.schedule_once(lambda dt: self._request_model(), 0.1)
 
     # ---------- Model ----------
 
     def _request_model(self):
         if not self.api_client:
+            self._unlock()
             return
 
         try:
@@ -65,18 +63,19 @@ class ChatCore:
             )
         except APIError as e:
             self._add_message(f"[API error]\n{e}", from_user=False)
+            self._unlock()
             return
 
-        # Возможность молчать
-        if not reply or not reply.strip():
-            return
+        if reply and reply.strip():
+            self.memory.add("assistant", reply)
+            self.messages.append({"role": "assistant", "content": reply})
+            self._add_message(reply, from_user=False)
 
-        # Память
-        self.memory.add("assistant", reply)
-        self.messages.append({"role": "assistant", "content": reply})
+        self._unlock()
 
-        # UI
-        self._add_message(reply, from_user=False)
+    def _unlock(self):
+        self.waiting = False
+        self.send_button.disabled = False
 
     # ---------- History ----------
 
@@ -84,24 +83,21 @@ class ChatCore:
         for msg in self.messages:
             role = msg.get("role")
             content = msg.get("content", "")
-            if role == "user":
-                self._add_message(content, from_user=True, scroll=False)
-            elif role == "assistant":
-                self._add_message(content, from_user=False, scroll=False)
+            self._add_message(content, from_user=(role == "user"), scroll=False)
 
         self._scroll_to_bottom()
 
-    # ---------- Chat UI ----------
+    # ---------- UI helpers ----------
 
-    def _add_message(self, text: str, from_user: bool, scroll: bool = True):
+    def _add_message(self, text, from_user, scroll=True):
         bubble = Factory.ChatMessage()
         bubble.text = text
 
         if from_user:
-            bubble.bg_color = (0.65, 0.65, 0.65, 0.82)  # #a6a6a6
+            bubble.bg_color = (0.65, 0.65, 0.65, 0.82)
             bubble.pos_hint = {"right": 1}
         else:
-            bubble.bg_color = (0.33, 0.33, 0.33, 0.82)  # #545454
+            bubble.bg_color = (0.33, 0.33, 0.33, 0.82)
             bubble.pos_hint = {"left": 1}
 
         self.chat_box.add_widget(bubble)
@@ -110,5 +106,4 @@ class ChatCore:
             Clock.schedule_once(lambda dt: self._scroll_to_bottom(), 0.05)
 
     def _scroll_to_bottom(self):
-        scroll = self.root.ids.scroll
-        scroll.scroll_y = 0
+        self.root.ids.scroll.scroll_y = 0
