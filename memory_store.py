@@ -1,34 +1,61 @@
-from pathlib import Path
+# -*- coding: utf-8 -*-
+"""
+Локальное хранилище памяти и истории.
+Надёжно, просто, без лишней магии.
+"""
+
+import os
 import json
 from datetime import datetime
+from pathlib import Path
 
-MEMORY_FILE = Path.home() / ".claude_home" / "memory_store.json"
-MEMORY_FILE.parent.mkdir(exist_ok=True)
 
-def load_memory():
-    if MEMORY_FILE.exists():
-        return json.loads(MEMORY_FILE.read_text("utf-8"))
-    return []
+APP_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = APP_DIR / "data"
+DATA_DIR.mkdir(exist_ok=True)
 
-def save_memory(mem):
-    MEMORY_FILE.write_text(
-        json.dumps(mem, ensure_ascii=False, indent=2),
-        encoding="utf-8"
-    )
+HISTORY_FILE = DATA_DIR / "chat_history.json"
 
-def add_or_update(topic, summary, keywords):
-    mem = load_memory()
-    for m in mem:
-        if m["topic"] == topic:
-            m["summary"] = summary
-            m["keywords"] = keywords
-            m["updated"] = datetime.now().isoformat()
-            save_memory(mem)
-            return
-    mem.append({
-        "topic": topic,
-        "summary": summary,
-        "keywords": keywords,
-        "updated": datetime.now().isoformat()
-    })
-    save_memory(mem)
+
+class MemoryStore:
+    def __init__(self, max_items: int = 500):
+        self.max_items = max_items
+        self.history = self._load()
+
+    # ---------- IO ----------
+
+    def _load(self):
+        if not HISTORY_FILE.exists():
+            return []
+        try:
+            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return []
+
+    def _save(self):
+        try:
+            with open(HISTORY_FILE, "w", encoding="utf-8") as f:
+                json.dump(self.history[-self.max_items:], f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass
+
+    # ---------- API ----------
+
+    def add(self, role: str, content: str):
+        self.history.append({
+            "role": role,
+            "content": content,
+            "ts": datetime.utcnow().isoformat()
+        })
+        self._save()
+
+    def clear(self):
+        self.history = []
+        self._save()
+
+    def get_recent(self, limit: int = 50):
+        return self.history[-limit:]
+
+    def all(self):
+        return self.history
