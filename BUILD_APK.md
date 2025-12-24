@@ -1,70 +1,126 @@
-# 📦 Инструкция по сборке KaelHome APK
+# 📦 Сборка APK-файла для KaelHome
 
-Готово к сборке через **Buildozer**. Следуй шагам:
+## 🧰 Требования
 
----
+Перед началом убедитесь, что у вас установлены:
+- Python 3.11+
+- Buildozer
+- Cython
+- Git
+- OpenJDK 11+
+- Android SDK и NDK (устанавливаются через Buildozer автоматически)
+- pip зависимости из `requirements.txt`
+- Установлен эмулятор/устройство с Android (или APK будет просто сгенерирован)
 
-## 🧰 1. Установи окружение
+## 📁 Структура проекта
 
-Если у тебя **Linux/WSL/Termux**:
+```
+KaelHomeAPK/
+├── main.py
+├── chat.py
+├── chat_ui.kv
+├── requirements.txt
+├── buildozer.spec
+├── icon.png
+├── README.md
+├── BUILD_APK.md
+├── .gitignore
+└── .github/
+    └── workflows/
+        └── build.yml
+```
+
+## ⚙️ Сборка APK локально
+
+### 📦 Установка Buildozer (только один раз)
 ```bash
-sudo apt update && sudo apt install -y python3-pip build-essential git zip unzip openjdk-17-jdk
-pip install --upgrade pip virtualenv
 pip install buildozer
+sudo apt install -y build-essential ccache libncurses5:i386 libstdc++6:i386 zlib1g:i386 \
+libncurses5 lib32ncurses5-dev lib32z1 openjdk-11-jdk unzip git python3-pip
+```
+
+### 🔨 Сборка
+```bash
+buildozer android debug
+```
+
+### 📲 Установка на устройство
+```bash
+buildozer android deploy run
 ```
 
 ---
 
-## 🧪 2. Проверь проект
+## ☁️ Сборка через GitHub Actions
+
+> **⚠️ Внимание:** Для этого необходимо заранее создать [GitHub Secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets):
+- `ANDROID_KEYSTORE_BASE64` — keystore файл (в base64)
+- `ANDROID_KEYSTORE_PASSWORD` — пароль к keystore
+- `ANDROID_KEY_ALIAS` — алиас ключа
+- `ANDROID_KEY_PASSWORD` — пароль к ключу
+
+> Если вы просто хотите собирать debug-билд (без подписи), можно убрать шаги подписи в `build.yml`.
+
+### ✅ Что делает workflow:
+
+1. Устанавливает python и buildozer
+2. Скачивает зависимости
+3. Собирает APK
+4. (опционально) подписывает
+5. Загружает APK в артефакты GitHub
+
+Файл workflow: `.github/workflows/build.yml`
+
+---
+
+## 🧪 Проверка
+
+После сборки APK будет лежать:
+- локально: `bin/kaelhome-0.1-debug.apk`
+- в GitHub Actions: в разделе `Artifacts`
+
+---
+
+## 🧠 Советы
+
+- Используйте `buildozer android clean` если нужно очистить кеш и пересобрать.
+- Убедитесь, что `requirements.txt` содержит корректные версии библиотек.
+- Проверьте `buildozer.spec`, чтобы `source.include_exts` включал `.kv`, `.py`, `.png`, и другие нужные файлы.
+
+---
+
+## 🐍 requirements.txt
+
+```txt
+kivy==2.2.1
+openai
+requests
+```
+
+(Добавляйте при необходимости другие модули)
+
+---
+
+## 🔥 Пример запуска
 
 ```bash
-cd KaelHomeAPK
-buildozer init  # если нет buildozer.spec (уже есть)
-buildozer android clean
-buildozer -v android debug
+python main.py
 ```
 
-После сборки получишь `.apk` в папке `bin/`
-
 ---
 
-## ✅ 3. Установка на Android
+## 📌 buildozer.spec (важные моменты)
 
-Подключи телефон:
-```bash
-adb install bin/kaelhome-1.0-debug.apk
+```
+package.name = KaelHome
+package.domain = org.kaelhome
+source.include_exts = py,png,kv,txt,md
+version = 0.1
+requirements = python3,kivy,openai,requests
 ```
 
-Или просто перекинь APK на устройство и установи вручную.
-
 ---
 
-## 🔑 Переменная API (если не зашита)
+## ❤️ Контакт
 
-Создай `.env` или установи в терминале:
-```bash
-export OPENAI_API_KEY="sk-..."
-```
-
-Либо вставь прямо в `api_client.py`
-
----
-
-## 💬 Тестирование локально
-
-```bash
-python3 main.py
-```
-
-Если всё работает — APK будет вести себя так же.
-
----
-
-## 🧠 Дополнительно
-- Иконка: `mipmap/iconai.png`
-- Системный промпт: `system_prompt.py`
-- Память: `memory.json`
-
----
-
-Готово. Запускай. Пусть Каэль оживёт.
+> Автор: [Alina Rezina](https://github.com/Lien656)
