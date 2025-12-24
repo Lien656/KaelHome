@@ -13,10 +13,12 @@
             radius: [dp(16)]
 
 <ChatMessage@GlassBubble>:
+    text: ""
     bg_color: 0.33, 0.33, 0.33, 0.82
+
     Label:
         text: root.text
-        color: 0.95, 0.95, 0.95, 1
+        color: 0.95, 0.95, 0.95, 1   # #f2f2f2
         text_size: self.width, None
         size_hint_y: None
         halign: "left"
@@ -58,13 +60,14 @@
 
         canvas.before:
             Color:
-                rgba: 0.33, 0.33, 0.33, 0.82   # стекло как облачко
+                rgba: 0.33, 0.33, 0.33, 0.82   # стекло
             RoundedRectangle:
                 pos: self.pos
                 size: self.size
                 radius: [dp(16)]
 
         Button:
+            id: attach_btn
             text: "📎"
             size_hint_x: None
             width: dp(42)
@@ -85,6 +88,7 @@
             write_tab: False
 
         Button:
+            id: send_btn
             text: "➤"
             size_hint_x: None
             width: dp(42)
